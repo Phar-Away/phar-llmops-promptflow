@@ -17,30 +17,32 @@ outputs:
     type: string
     reference: ${concat_scores.output}
 nodes:
-- name: llm_evaluation
-  type: llm
-  source:
-    type: code
-    path: llm_evaluation.jinja2
-  inputs:
-    deployment_name: gpt-35-turbo
-    entity: ${inputs.entity_type}
-    text: ${inputs.text}
-    value: ${inputs.llm_result}
-  connection: aoai
-  api: chat
-- name: concat_scores
-  type: python
-  source:
-    type: code
-    path: concat_scores.py
-  inputs:
-    llm_score: ${llm_evaluation.output}
-- name: aggregate
-  type: python
-  source:
-    type: code
-    path: aggregate.py
-  inputs:
-    concatenated_result: ${concat_scores.output}
-  aggregation: true
+  - name: llm_evaluation
+    type: llm
+    source:
+      type: code
+      path: llm_evaluation.jinja2
+    inputs:
+      deployment_name: gpt-35-turbo
+      entity: ${inputs.entity_type}
+      text: ${inputs.text}
+      value: ${inputs.llm_result}
+      model: gpt-3.5-turbo-1106
+      temperature: ".5"
+    connection: pf-openai-connect
+    api: chat
+  - name: concat_scores
+    type: python
+    source:
+      type: code
+      path: concat_scores.py
+    inputs:
+      llm_score: ${llm_evaluation.output}
+  - name: aggregate
+    type: python
+    source:
+      type: code
+      path: aggregate.py
+    inputs:
+      concatenated_result: ${concat_scores.output}
+    aggregation: true

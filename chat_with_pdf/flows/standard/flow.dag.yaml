@@ -31,51 +31,51 @@ outputs:
     type: string
     reference: ${find_context_tool.output.context}
 nodes:
-- name: setup_env
-  type: python
-  source:
-    type: code
-    path: setup_env.py
-  inputs:
-    connection: aoai
-    config: ${inputs.config}
-- name: download_tool
-  type: python
-  source:
-    type: code
-    path: download_tool.py
-  inputs:
-    url: ${inputs.pdf_url}
-    env_ready_signal: ${setup_env.output}
-- name: build_index_tool
-  type: python
-  source:
-    type: code
-    path: build_index_tool.py
-  inputs:
-    pdf_path: ${download_tool.output}
-- name: find_context_tool
-  type: python
-  source:
-    type: code
-    path: find_context_tool.py
-  inputs:
-    question: ${rewrite_question_tool.output}
-    index_path: ${build_index_tool.output}
-- name: qna_tool
-  type: python
-  source:
-    type: code
-    path: qna_tool.py
-  inputs:
-    prompt: ${find_context_tool.output.prompt}
-    history: ${inputs.chat_history}
-- name: rewrite_question_tool
-  type: python
-  source:
-    type: code
-    path: rewrite_question_tool.py
-  inputs:
-    question: ${inputs.question}
-    history: ${inputs.chat_history}
-    env_ready_signal: ${setup_env.output}
+  - name: setup_env
+    type: python
+    source:
+      type: code
+      path: setup_env.py
+    inputs:
+      connection: pf-openai-connect
+      config: ${inputs.config}
+  - name: download_tool
+    type: python
+    source:
+      type: code
+      path: download_tool.py
+    inputs:
+      url: ${inputs.pdf_url}
+      env_ready_signal: ${setup_env.output}
+  - name: build_index_tool
+    type: python
+    source:
+      type: code
+      path: build_index_tool.py
+    inputs:
+      pdf_path: ${download_tool.output}
+  - name: find_context_tool
+    type: python
+    source:
+      type: code
+      path: find_context_tool.py
+    inputs:
+      question: ${rewrite_question_tool.output}
+      index_path: ${build_index_tool.output}
+  - name: qna_tool
+    type: python
+    source:
+      type: code
+      path: qna_tool.py
+    inputs:
+      prompt: ${find_context_tool.output.prompt}
+      history: ${inputs.chat_history}
+  - name: rewrite_question_tool
+    type: python
+    source:
+      type: code
+      path: rewrite_question_tool.py
+    inputs:
+      question: ${inputs.question}
+      history: ${inputs.chat_history}
+      env_ready_signal: ${setup_env.output}
