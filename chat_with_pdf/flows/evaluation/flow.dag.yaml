@@ -8,7 +8,8 @@ inputs:
     is_chat_input: false
   answer:
     type: string
-    default: Of the tents mentioned in the retrieved documents, the Alpine Explorer
+    default:
+      Of the tents mentioned in the retrieved documents, the Alpine Explorer
       Tent has the highest waterproof rating of 3000mm for its rainfly.
     is_chat_input: false
   question:
@@ -396,128 +397,131 @@ outputs:
     type: string
     reference: ${concat_scores.output.gpt_retrieval_score}
 nodes:
-- name: concat_scores
-  type: python
-  source:
-    type: code
-    path: concat_scores.py
-  inputs:
-    rag_generation_score: ${parse_generation_score.output}
-    rag_grounding_score: ${parse_grounding_score.output}
-    rag_retrieval_score: ${parse_retrieval_score.output}
-  use_variants: false
-- name: aggregate_variants_results
-  type: python
-  source:
-    type: code
-    path: aggregate_variants_results.py
-  inputs:
-    metrics: ${inputs.metrics}
-    results: ${concat_scores.output}
-  aggregation: true
-  use_variants: false
-- name: gpt_groundedness
-  type: llm
-  source:
-    type: code
-    path: rag_groundedness_prompt.jinja2
-  inputs:
-    deployment_name: aoai
-    temperature: 0
-    top_p: 1
-    max_tokens: 1000
-    presence_penalty: 0
-    frequency_penalty: 0
-    FullBody: ${inputs.documents}
-    answer: ${inputs.answer}
-    question: ${inputs.question}
-  connection: aoai
-  api: chat
-  activate:
-    when: ${validate_input.output.gpt_groundedness}
-    is: true
-  use_variants: false
-- name: gpt_retrieval_score
-  type: llm
-  source:
-    type: code
-    path: rag_retrieval_prompt.jinja2
-  inputs:
-    deployment_name: aoai
-    temperature: 0
-    top_p: 1
-    max_tokens: 1000
-    presence_penalty: 0
-    frequency_penalty: 0
-    FullBody: ${inputs.documents}
-    question: ${inputs.question}
-  connection: aoai
-  api: chat
-  activate:
-    when: ${validate_input.output.gpt_retrieval_score}
-    is: true
-  use_variants: false
-- name: gpt_relevance
-  type: llm
-  source:
-    type: code
-    path: rag_generation_prompt.jinja2
-  inputs:
-    deployment_name: aoai
-    temperature: 0
-    top_p: 1
-    max_tokens: 1000
-    presence_penalty: 0
-    frequency_penalty: 0
-    FullBody: ${inputs.documents}
-    answer: ${inputs.answer}
-    question: ${inputs.question}
-  connection: aoai
-  api: chat
-  activate:
-    when: ${validate_input.output.gpt_relevance}
-    is: true
-  use_variants: false
-- name: parse_generation_score
-  type: python
-  source:
-    type: code
-    path: parse_generation_score.py
-  inputs:
-    rag_generation_score: ${gpt_relevance.output}
-  use_variants: false
-- name: parse_retrieval_score
-  type: python
-  source:
-    type: code
-    path: parse_retrival_score.py
-  inputs:
-    retrieval_output: ${gpt_retrieval_score.output}
-  use_variants: false
-- name: parse_grounding_score
-  type: python
-  source:
-    type: code
-    path: parse_groundedness_score.py
-  inputs:
-    rag_grounding_score: ${gpt_groundedness.output}
-  use_variants: false
-- name: select_metrics
-  type: python
-  source:
-    type: code
-    path: select_metrics.py
-  inputs:
-    metrics: ${inputs.metrics}
-  use_variants: false
-- name: validate_input
-  type: python
-  source:
-    type: code
-    path: validate_input.py
-  inputs:
-    answer: ${inputs.answer}
-    documents: ${inputs.documents}
-    question: ${inputs.question}
-    selected_metrics: ${select_metrics.output}
-  use_variants: false
+  - name: concat_scores
+    type: python
+    source:
+      type: code
+      path: concat_scores.py
+    inputs:
+      rag_generation_score: ${parse_generation_score.output}
+      rag_grounding_score: ${parse_grounding_score.output}
+      rag_retrieval_score: ${parse_retrieval_score.output}
+    use_variants: false
+  - name: aggregate_variants_results
+    type: python
+    source:
+      type: code
+      path: aggregate_variants_results.py
+    inputs:
+      metrics: ${inputs.metrics}
+      results: ${concat_scores.output}
+    aggregation: true
+    use_variants: false
+  - name: gpt_groundedness
+    type: llm
+    source:
+      type: code
+      path: rag_groundedness_prompt.jinja2
+    inputs:
+      deployment_name: aoai
+      temperature: 0
+      top_p: 1
+      max_tokens: 1000
+      presence_penalty: 0
+      frequency_penalty: 0
+      FullBody: ${inputs.documents}
+      answer: ${inputs.answer}
+      question: ${inputs.question}
+      model: gpt-3.5-turbo-1106
+    connection: pf-openai-connect
+    api: chat
+    activate:
+      when: ${validate_input.output.gpt_groundedness}
+      is: true
+    use_variants: false
+  - name: gpt_retrieval_score
+    type: llm
+    source:
+      type: code
+      path: rag_retrieval_prompt.jinja2
+    inputs:
+      deployment_name: aoai
+      temperature: 0
+      top_p: 1
+      max_tokens: 1000
+      presence_penalty: 0
+      frequency_penalty: 0
+      FullBody: ${inputs.documents}
+      question: ${inputs.question}
+      model: gpt-3.5-turbo-1106
+    connection: pf-openai-connect
+    api: chat
+    activate:
+      when: ${validate_input.output.gpt_retrieval_score}
+      is: true
+    use_variants: false
+  - name: gpt_relevance
+    type: llm
+    source:
+      type: code
+      path: rag_generation_prompt.jinja2
+    inputs:
+      deployment_name: aoai
+      temperature: 0
+      top_p: 1
+      max_tokens: 1000
+      presence_penalty: 0
+      frequency_penalty: 0
+      FullBody: ${inputs.documents}
+      answer: ${inputs.answer}
+      question: ${inputs.question}
+      model: gpt-3.5-turbo-1106
+    connection: pf-openai-connect
+    api: chat
+    activate:
+      when: ${validate_input.output.gpt_relevance}
+      is: true
+    use_variants: false
+  - name: parse_generation_score
+    type: python
+    source:
+      type: code
+      path: parse_generation_score.py
+    inputs:
+      rag_generation_score: ${gpt_relevance.output}
+    use_variants: false
+  - name: parse_retrieval_score
+    type: python
+    source:
+      type: code
+      path: parse_retrival_score.py
+    inputs:
+      retrieval_output: ${gpt_retrieval_score.output}
+    use_variants: false
+  - name: parse_grounding_score
+    type: python
+    source:
+      type: code
+      path: parse_groundedness_score.py
+    inputs:
+      rag_grounding_score: ${gpt_groundedness.output}
+    use_variants: false
+  - name: select_metrics
+    type: python
+    source:
+      type: code
+      path: select_metrics.py
+    inputs:
+      metrics: ${inputs.metrics}
+    use_variants: false
+  - name: validate_input
+    type: python
+    source:
+      type: code
+      path: validate_input.py
+    inputs:
+      answer: ${inputs.answer}
+      documents: ${inputs.documents}
+      question: ${inputs.question}
+      selected_metrics: ${select_metrics.output}
+    use_variants: false
