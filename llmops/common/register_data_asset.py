@@ -51,25 +51,36 @@ def register_data_asset(
     subscription_id: Optional[str] = None,
     env_name: Optional[str] = None,
 ):
+    print('\n ************** START register_data_asset START ***************')
+    print('base_path: ', base_path)
+    print('exp_filename: ', exp_filename)
+    print('subscription_id: ', subscription_id)
+    print('env_name: ', env_name)
     config = ExperimentCloudConfig(subscription_id=subscription_id, env_name=env_name)
+    print('\n config: ', config)
     experiment = load_experiment(
         filename=exp_filename, base_path=base_path, env=config.environment_name
     )
+    print('\n experiment: ', experiment)
     ml_client = MLClient(
         DefaultAzureCredential(),
         config.subscription_id,
         config.resource_group_name,
         config.workspace_name,
     )
+    print('\n ml_client: ', ml_client)
 
     # Get all used datasets
     all_datasets = {ds.dataset.name: ds.dataset for ds in experiment.datasets}
+    print('\n all_datasets: ', all_datasets)
 
     for evaluator in experiment.evaluators:
+        print('\n evaluator: ', evaluator)
         all_datasets.update({ds.dataset.name: ds.dataset for ds in evaluator.datasets})
 
     # Register local dataset as remote datasets in Azure ML
     for ds in all_datasets.values():
+        print('\n ds: ', ds)
         local_data_path = ds.get_local_source(base_path=base_path)
         if local_data_path:
             logger.info(f"Registering dataset: {ds.name}")
@@ -105,6 +116,8 @@ def register_data_asset(
 
             logger.info(aml_dataset.version)
             logger.info(aml_dataset.id)
+
+    print('\n ************** END register_data_asset END ***************')
 
 
 def main():
