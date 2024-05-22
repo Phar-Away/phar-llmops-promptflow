@@ -97,7 +97,12 @@ def register_data_asset(
             )
 
             try:
-                data_info = ml_client.data.get(name=ds.name, label="latest")
+                try:
+                    data_info = ml_client.data.get(name=ds.name, label="latest")
+                    logger.info(f"Retrieved data asset: {data_info}")
+                except Exception as e:
+                    logger.error(f"Error retrieving data asset: {str(e)}")
+                    raise e
                 m_hash = dict(data_info.tags).get("data_hash")
                 if m_hash is not None:
                     if m_hash != data_hash:
