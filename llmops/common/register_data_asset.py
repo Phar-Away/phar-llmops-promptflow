@@ -80,7 +80,7 @@ def register_data_asset(
 
     # Register local dataset as remote datasets in Azure ML
     for ds in all_datasets.values():
-        print('\n ds: ', ds)
+        logger.info(f"Dataset object as dict: {vars(ds)}")
         local_data_path = ds.get_local_source(base_path=base_path)
         if local_data_path:
             logger.info(f"Registering dataset: {ds.name}")
